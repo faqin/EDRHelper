@@ -1,49 +1,40 @@
 # coding=utf-8
-
 from idaapi import *
 import idc
-
+from EDRHelper import *
 class EDRHooks(DBG_Hooks):
     
-    def dbg_bpt(self,tif,ea):
 
-        print "hit on 0x%08x" %ea
-        for k,v in self.get_arg_dict.items():
-            print "%s=%s" % (k,v)
-        return 1
-    
-    def get_arg_dict(self,arg_name_list=[]):
+    def dbg_bpt(self,tid,ea):
 
+        print "hit on 0x%08x" % ea
+       
+       
+        self.dbgstep_into(ea)
+
+        a=EDRHelper()
+        print a.get_arg_value("A1")
+        #print  self.get_arg_value("A1")
         
-        super.dbg_step_into()
 
-        return {k:self.get_arg_value(k) for k in arg_name_list }
-    
-
-    def get_arg_value(self,arg_name):
-        regvalue=GetRegValue(arg_name)
-        if is_addr(regvalue):
-            return self.get_str(regvalue)
-        else:
-            return regvalue
-
-
-
-
-
-    def get_str(self,addr):
+    def dbgstep_into(self,ea):
         
-        str=''
-        while Byte(addr)!=0:
-            str+=chr(Byte(addr))
-            addr+=1
-        return str
+        #先把断点禁用才能stp_into
+        EnableBpt(ea,0)
+        
+        step_into()
+        #必须用GetDebuggerEvent处理step_into()
+        GetDebuggerEvent(WFNE_SUSP , -1)
+        EnableBpt(ea,1)
+        
 
 
-    def is_addr(self,data):
-        if data>=idc.MinEA() and data<MaxEA():
-            return 1
-        else:
-            return 0
 
 
+debugger=EDRHooks()
+debugger.hook()
+
+AddBpt(0x45fdb4)
+AddBpt(0x45fEF0)
+AddBpt(0x45ff78)
+AddBpt(0x4600A0)
