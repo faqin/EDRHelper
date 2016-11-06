@@ -10,16 +10,16 @@ class EDRHooks(DBG_Hooks):
         print "hit on 0x%08x" % ea
        
         print type(ea)
-        try:
-            self.dbgstep_into(ea)
+        
+        self.dbgstep_into(ea)
         
 
-            a=EDRHelper()
+        helper=EDRHelper()
         
 
-            print a.get_arg_value("A1")
-        except Exception,ex:
-            print 'except'
+        print helper.get_arg_value("A1")
+       
+            
 
         idaapi.continue_process()
         #print  self.get_arg_value("A1")
